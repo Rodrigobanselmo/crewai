@@ -1,0 +1,60 @@
+1. user_input
+"i want to know the time average between all appointments from 2024 creation and its medical record cretion for the ones who have any medical record. i want just for active medical records and only compare for the first one created"
+
+1. correct result
+WITH "FirstMedicalRecord" AS (
+    SELECT 
+        "appointment_id", 
+        MIN("created_at") AS "first_medical_record_created_at"
+    FROM 
+        "MedicalRecord"
+    WHERE 
+        "status" = 'ACTIVE'
+    GROUP BY 
+        "appointment_id"
+)
+SELECT 
+    AVG(EXTRACT(EPOCH FROM (fm."first_medical_record_created_at" - a."created_at")) / 3600) AS "average_time_difference_hours"
+FROM 
+    "Appointment" a
+INNER JOIN 
+    "FirstMedicalRecord" fm ON a."id" = fm."appointment_id"
+WHERE 
+    a."created_at" BETWEEN '2024-01-01' AND '2024-12-31';
+
+
+1. user_input
+"Retrieve the count of appointments for institutions with names similar to 'intituicao coala' in the last month."
+
+1. correct result 
+SELECT 
+    i.id,
+    i.fantasy_name,
+    COUNT(a.id) AS appointment_count
+FROM "Institution" i
+LEFT JOIN "Appointment" a ON i.id = a.institution_id
+    AND a.created_at >= NOW() - INTERVAL '1 month'
+WHERE
+    LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%intituicao coala%'))
+    OR LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%intituicao coala%'))
+    OR similarity(LOWER(unaccent(fantasy_name)), LOWER(unaccent('intituicao coala'))) > 0.4
+    OR similarity(LOWER(unaccent(nickname)), LOWER(unaccent('intituicao coala'))) > 0.4
+GROUP BY i.id, i.fantasy_name
+ORDER BY
+    GREATEST(
+        similarity(LOWER(unaccent(fantasy_name)), LOWER(unaccent('intituicao coala'))),
+        similarity(LOWER(unaccent(nickname)), LOWER(unaccent('intituicao coala'))),
+        CASE WHEN LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%intituicao coala%')) THEN 1 ELSE 0 END,
+        CASE WHEN LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%intituicao coala%')) THEN 1 ELSE 0 END
+    ) DESC;
+
+1. user_input
+get all users activated last month that is a manager/gestor
+
+1. correct result 
+SELECT "User".*
+FROM "User"
+JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"
+JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"
+WHERE "User"."activated_at" BETWEEN date_trunc('month', current_date) - INTERVAL '1 month' AND date_trunc('month', current_date)
+AND "Profile"."name" = 'Gestor';

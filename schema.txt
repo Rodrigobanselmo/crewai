@@ -1,0 +1,1878 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum InstitutionStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
+enum DefaultStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserStatus {
+  ACTIVE
+  FIRST_ACCESS
+  NO_ACCESS
+  INACTIVE
+  TEMPORARY
+  TRIAL
+}
+
+enum Genre {
+  Masculino
+  Feminino
+  Outro
+}
+
+enum Complaint {
+  TRAUM
+  PAIN
+  FLU_SYMPTOMS
+  FEVER
+  ALLERGY
+  SKIN_LESION
+  OTHERS
+  LEAD
+}
+
+enum AppointmentStatus {
+  WAITING_ATTENDANCE
+  WAITING_NURSE
+  WAITING_DOCTOR
+  IN_ATTENDANCE
+  FOLLOW_UP
+  FINISHED
+}
+
+enum AppointmentQueue {
+  DOCTOR
+  NURSE
+}
+
+enum MedicalRecordClassification {
+  EMERGENCY
+  VERY_URGENT
+  URGENT
+  LOW_URGENT
+  NOT_URGENT
+}
+
+enum PrescriptionType {
+  SIMPLE
+  SPECIAL_CONTROL
+}
+
+enum AppointmentFinishedStatus {
+  EMERGENCY_ROOM_HEALTH_INSURANCE
+  EMERGENCY_ROOM_PUBLIC
+  OUTPATIENT_INVESTIGATION
+  SAMU_FIREFIGHTER
+  CALL_CENTER
+  INVALID
+  EVASION
+}
+
+enum HealthInstitutionType {
+  PUBLIC
+  PRIVATE
+}
+
+enum VaccineStatus {
+  PENDING
+  VALIDATED
+  PARTIALLY_VALIDATED
+  FAILED
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+  NOT_INFORMED
+}
+
+enum ScheduledStatus {
+  SCHEDULED
+  CANCELED
+  FINISHED
+  STARTED
+}
+
+enum AuthorizationStatus {
+  PENDING
+  AUTHORIZED
+  AUTHORIZED_SCHOOL
+}
+
+enum ProfessionalType {
+  DOCTOR
+  PEDIATRICIAN
+  SPEECH_THERAPIST
+  OCCUPATIONAL_THERAPIST
+  PSYCHOLOGIST
+  NUTRITIONIST
+  PSYCHIATRIST
+  PHYSIOTHERAPIST
+}
+
+enum ExpenseType {
+  HOSPITAL
+  TRANSPORT
+  OTHERS
+}
+
+enum RefundType {
+  TED
+  PIX
+  BOLETO
+}
+
+enum RefundStatus {
+  DEFERRED
+  PARTIALLY_DEFERRED
+  REJECTED
+  IN_ANALYSIS
+  AWAITING_REVIEW
+  CANCELED
+}
+
+enum RejectedRefundStatus {
+  INVALID_PROOF
+  MISSING_PROOF
+  INSUFFICIENT_COVERAGE
+  OTHERS
+}
+
+enum ScheduledClassificationStatus {
+  PATIENT
+  INSTITUTIONAL
+  OTHER
+}
+
+enum FirstFillingType {
+  PERSONAL_DATA
+  HEALTH_HISTORY
+}
+
+enum FirstFillingStepStatus {
+  INITIALIZED
+  ENDED
+  SKIPPED
+}
+
+enum ProfileType {
+  MEDICAL
+  NORMAL
+  FACULTATIVE_ACCESS
+}
+
+enum Interval {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+}
+
+enum CancelSubscriptionStatus {
+  PENDING
+  FINISHED
+}
+
+enum CidAppointmentType {
+  FINAL
+  HYPOTHESIS
+}
+
+enum InputType {
+  NUMBER
+  CURRENCY
+  DATE
+  DATE_RANGE
+  PRODUCT
+  PAYMENT
+  ARRAY
+  ENUM
+  TEXT
+}
+
+enum PlanType {
+  B2C
+  UPGRADE
+  INSTITUTION
+}
+
+enum IndicationStatus {
+  PENDING
+  VALID
+  INVALID
+}
+
+enum EditLogType {
+  ENABLED
+  DISABLED
+  UPDATED
+}
+
+enum CalendarSettingsDays {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+}
+
+enum MentalHealthScheduleStatus {
+  Agendada
+  Confirmada
+  Cancelada
+  Realizada
+  NaoRealizada
+}
+
+enum MentalHealthScheduleRecordStatus {
+  EXTERNAL
+  INTERNAL
+  INVALID
+}
+
+enum MentalHealthScheduleRecordUserType {
+  CHILDREN
+  RESPONSIBLE
+  COLLABORATOR
+}
+
+enum HealUnitPatientType {
+  ADULT
+  PEDIATRIC
+}
+
+enum HealthUniPaymentMethods {
+  PIX
+  TRANSFER
+  CARD
+  BILLING
+}
+
+enum HealthUnitImagingExams {
+  TOMOGRAPHY
+  RESONANCE
+  XRAY
+  ULTRASONOGRAPHY
+}
+
+enum HealthUnitLaboratoryExams {
+  BLOOD
+  HEMOCULTURE
+  URINE
+  UROCULTURE
+}
+
+enum HealthUnitCareUnits {
+  WARD
+  ROOM
+  CTI
+}
+
+enum HealthUnitImobilizationTypes {
+  PLASTER
+  SPLINT
+  IMMOBILIZER
+}
+
+enum HealthUnitCareModality {
+  APPOINTMENT
+  EMERGENCY
+  ADMISSION
+}
+
+enum HealthUnitTypes {
+  HOSPITAL
+  ORTHOPEDIC
+  OPHTHALMOLOGY
+  DENTISTRY
+  OTOLARYNGOLOGY
+}
+
+enum DueDateType {
+  EVERY_DAY_5
+  EVERY_DAY_10
+  EVERY_DAY_15
+  EVERY_DAY_20
+}
+
+enum LogType {
+  SYSTEM
+  WEBSOCKET
+}
+
+model User {
+  id                               Int                              @id @default(autoincrement())
+  cpf                              String?                          @unique
+  email                            String?                          @unique
+  name                             String?
+  lastname                         String?
+  fullname                         String?
+  social_name                      String?
+  telephone                        String?                          @unique
+  birthday                         DateTime?
+  genre                            Genre?
+  status                           UserStatus?                      @default(value: FIRST_ACCESS)
+  valid_telephone                  Boolean?
+  valid_email                      Boolean?
+  temporary_data                   Json?
+  GeneralInformation               GeneralInformation?
+  address                          Address[]
+  patientAppointment               Appointment[]                    @relation("patientAppointment")
+  requestedUserAppointment         Appointment[]                    @relation("requestedUserAppointment")
+  openedByAppointment              Appointment[]                    @relation("openedByAppointment")
+  responsable                      Responsable[]                    @relation("children")
+  childrens                        Responsable[]                    @relation("responsable")
+  exams                            Exam[]
+  medicalRecords                   MedicalRecord[]
+  prescription                     Prescription[]
+  report                           Report[]
+  sickNote                         SickNote[]
+  Certificate                      Certificate[]
+  MeasureBodyMassIndex             MeasureBodyMassIndex[]
+  HealthInsurance                  HealthInsurance[]
+  Medicine                         Medicine[]                       @relation("MedicineToUser")
+  UserVaccine                      UserVaccine[]                    @relation("UserVaccineToUser")
+  UserDisease                      UserDisease[]                    @relation("UserDiseaseToUser")
+  VaccineDocument                  VaccineDocument[]
+  Allergy                          UserAllergy[]                    @relation("UserAllergyToUser")
+  HistorySickNote                  HistorySickNote[]                @relation("HistorySickNoteToUser")
+  professionalMenatlHealth         MentalHealth[]                   @relation("professionalMentalHealth")
+  patientMentalHealth              MentalHealth[]                   @relation("patientMentalHealth")
+  MeasureCephalicPerimeter         MeasureCephalicPerimeter[]
+  MeasureAbdominalCircumference    MeasureAbdominalCircumference[]
+  UserSurgery                      UserSurgery[]
+  InstitutionalAppointment         InstitutionalAppointment[]
+  MedicineAdministration           MedicineAdministration[]
+  UserNotifications                UserNotifications[]
+  requested_refund                 Refund[]                         @relation("requestedRefund")
+  patient_refund                   Refund[]                         @relation("patientRefund")
+  Attachments                      Attachments[]
+  ProfessionalReference            ProfessionalReference[]
+  activated_at                     DateTime?
+  UserSignatures                   UserSignatures[]
+  Subscription                     Subscription[]
+  UserCustomerStripe               UserCustomerStripe?
+  UserFirstFills                   UserFirstFills[]
+  UserProfile                      UserProfile[]
+  AppointmentStatusLog             AppointmentStatusLog[]
+  ResponsableSubscription          Subscription[]                   @relation(name: "dependent")
+  created_at                       DateTime                         @default(now())
+  updated_at                       DateTime?                        @updatedAt
+  patient_cid_appointment          AppointmentDiagnose[]            @relation("patientAppointmentDiagnose")
+  professional_cid_appointment     AppointmentDiagnose[]            @relation("professionalAppointmentDiagnose")
+  UserImage                        Image?
+  UserIndication                   Indication[]
+  AppointmentFeedback              AppointmentFeedback[]
+  AppointmentCSAT                  AppointmentCSAT[]
+  UserTrialData                    UserTrialData[]
+  InstitutionSettingsLog           InstitutionSettingsLog[]
+  CalendarSettings                 CalendarSettings[]
+  MentalHealthScheduleProfessional MentalHealthSchedule[]           @relation("professionalMentalHealthSchedule")
+  MentalHealthScheduleCollaborator MentalHealthSchedule[]
+  MentalHealthScheduleUser         MentalHealthScheduleUser[]
+  MentalHealthScheduleRecordUser   MentalHealthScheduleRecordUser[]
+  MentalHealthScheduleStatusLog    MentalHealthScheduleStatusLog[]
+  AppointmentQueueLog              AppointmentQueueLog[]
+  UserFollowUp                     FollowUp[]                       @relation("userFollowUp")
+  PatientFollowUp                  FollowUp[]                       @relation("patientFollowUp")
+  test                             CourseTest[]
+  courseAdmin                      Course[]
+  courseUser                       CourseUser[]
+  classUser                        ClassUser[]
+  certificateCourse                CertificateCourse[]
+  quiz                             ModuleUserQuiz[]
+  CreatorUserDisease               UserDisease[]                    @relation("UserDiseaseToCreator")
+  CreatorUserVaccine               UserVaccine[]                    @relation("UserVaccineToCreator")
+  CreatorUserAllergy               UserAllergy[]                    @relation("UserAllergyToCreator")
+  CreatorMedicine                  Medicine[]                       @relation("MedicineToCreator")
+  CreatorHistorySickNote           HistorySickNote[]                @relation("HistorySickNoteToCreator")
+  UserCreationLog                  UserCreationLog[]                @relation("creationLogToUser")
+  CreatorUserCreationLog           UserCreationLog[]                @relation("creationLogToCreator")
+}
+
+
+model UserFirstFills {
+  id         Int                     @id @default(autoincrement())
+  user_id    Int
+  user       User                    @relation(fields: [user_id], references: [id])
+  step       String
+  status     FirstFillingStepStatus?
+  type       FirstFillingType        @default(value: HEALTH_HISTORY)
+  created_at DateTime                @default(now())
+  updated_at DateTime?               @updatedAt
+
+  @@index([type], type: Hash)
+}
+
+model UserSignatures {
+  id            Int    @id @default(autoincrement())
+  data          String
+  user_id       Int
+  user          User   @relation(fields: [user_id], references: [id])
+  document_name String
+  ip            String
+  name          String
+  data_type     String
+}
+
+model Notifications {
+  id                Int                 @id @default(autoincrement())
+  title             String
+  description       String
+  type              String
+  data              Json?
+  institution_id    Int?
+  institution       Institution?        @relation(fields: [institution_id], references: [id])
+  UserNotifications UserNotifications[]
+  created_at        DateTime            @default(now())
+  updated_at        DateTime?           @updatedAt
+}
+
+model UserNotifications {
+  id              Int           @id @default(autoincrement())
+  user_id         Int
+  user            User          @relation(fields: [user_id], references: [id])
+  notification_id Int
+  notifications   Notifications @relation(fields: [notification_id], references: [id])
+  visualized      Boolean?      @default(value: false)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime?     @updatedAt
+}
+
+model Responsable {
+  id             Int       @id @default(autoincrement())
+  children       User      @relation("children", fields: [children_id], references: [id])
+  children_id    Int
+  responsable    User      @relation("responsable", fields: [responsable_id], references: [id])
+  responsable_id Int
+  created_at     DateTime  @default(now())
+  updated_at     DateTime? @updatedAt
+
+  @@unique([children_id, responsable_id])
+}
+
+model Address {
+  id                 Int                 @id @default(autoincrement())
+  street             String?
+  neighborhood       String?
+  complement         String?
+  state              String?
+  city               String?
+  zip_code           String?
+  number             String?
+  user               User?               @relation(fields: [user_id], references: [id])
+  user_id            Int?
+  network            Network?            @relation(fields: [network_id], references: [id])
+  network_id         Int?                @unique
+  institution        Institution?        @relation(fields: [institution_id], references: [id])
+  institution_id     Int?                @unique
+  hospital_id        Int?
+  HospitalPreference HospitalPreference? @relation(fields: [hospital_id], references: [id])
+  created_at         DateTime            @default(now())
+  updated_at         DateTime?           @updatedAt
+  HealthUnit         HealthUnit?         @relation(fields: [healthUnitId], references: [id])
+  healthUnitId       Int?
+  brand              Brand?              @relation(fields: [brand_id], references: [id])
+  brand_id           Int?                @unique
+}
+
+model Network {
+  id                  Int           @id @default(autoincrement())
+  cnpj                String        @unique
+  social_reason       String
+  fantasy_name        String
+  fullname            String?
+  telephone           String
+  email               String?
+  whatsapp            String?
+  nickname            String?
+  costCenter          Boolean?      @default(value: false)
+  image               Image?        @relation(fields: [image_id], references: [id])
+  image_id            Int?          @unique
+  address             Address?
+  bankAccount         BankAccount?  @relation(fields: [bank_account_id], references: [id])
+  bank_account_id     Int?          @unique
+  responsable_finance String?
+  due_date            DueDateType?
+  status              DefaultStatus @default(value: ACTIVE)
+  brand               Brand[]
+  created_at          DateTime      @default(now())
+  updated_at          DateTime?     @updatedAt
+  inactivated_at      DateTime?
+}
+
+model Brand {
+  id                  Int           @id @default(autoincrement())
+  cnpj                String        @unique
+  social_reason       String
+  fantasy_name        String
+  fullname            String?
+  telephone           String?
+  nickname            String?
+  email               String?
+  whatsapp            String?
+  image               Image?        @relation(fields: [image_id], references: [id])
+  image_id            Int?          @unique
+  address             Address?
+  costCenter          Boolean?      @default(value: false)
+  bankAccount         BankAccount?  @relation(fields: [bank_account_id], references: [id])
+  bank_account_id     Int?          @unique
+  responsable_finance String?
+  due_date            DueDateType?
+  status              DefaultStatus @default(value: ACTIVE)
+  network             Network?      @relation(fields: [network_id], references: [id])
+  network_id          Int?
+  institution         Institution[]
+  created_at          DateTime      @default(now())
+  updated_at          DateTime?     @updatedAt
+  inactivated_at      DateTime?
+}
+
+model Institution {
+  id                        Int                         @id @default(autoincrement())
+  cnpj                      String?                     @unique
+  social_reason             String
+  fantasy_name              String
+  fullname                  String?
+  nickname                  String?
+  telephone                 String?
+  email                     String?
+  whatsapp                  String?
+  costCenter                Boolean?                    @default(value: false)
+  status                    InstitutionStatus           @default(value: ACTIVE)
+  address                   Address?
+  bankAccount               BankAccount?                @relation(fields: [bank_account_id], references: [id])
+  bank_account_id           Int?                        @unique
+  responsable_finance       String?
+  due_date                  DueDateType?
+  image                     Image?                      @relation(fields: [image_id], references: [id])
+  image_id                  Int?                        @unique
+  InstitutionType           InstitutionType             @relation(fields: [institution_type_id], references: [id])
+  institution_type_id       Int
+  Appointment               Appointment[]
+  InstitutionalAppointment  InstitutionalAppointment[]
+  Refund                    Refund[]
+  Notifications             Notifications[]
+  HospitalPreference        HospitalPreference[]
+  UserProfile               UserProfile[]
+  InstitutionSettings       InstitutionSettings[]
+  plan_id                   Int?
+  Plan                      Plan?                       @relation(fields: [plan_id], references: [id])
+  Subscription              Subscription[]
+  InstitutionSettingsLog    InstitutionSettingsLog[]
+  brand_id                  Int?
+  brand                     Brand?                      @relation(fields: [brand_id], references: [id])
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime?                   @updatedAt
+  inactivated_at            DateTime?
+  UserTrialData             UserTrialData[]
+  HealthUnitsOnInstitutions HealthUnitsOnInstitutions[]
+}
+
+model ScheduledAppointment {
+  id                                 Int                                @id @default(autoincrement())
+  appointment_date                   DateTime
+  status                             ScheduledStatus                    @default(value: SCHEDULED)
+  appointment                        Appointment?                       @relation("appointmentScheduled")
+  scheduledAppointmentClassification ScheduledAppointmentClassification @relation(fields: [scheduled_classification_id], references: [id])
+  scheduled_classification_id        Int
+  institutionalAppointment           InstitutionalAppointment?
+  description                        String?
+  created_at                         DateTime                           @default(now())
+  updated_at                         DateTime?                          @updatedAt
+}
+
+model ScheduledAppointmentClassification {
+  id                   Int                           @id @default(autoincrement())
+  scheduledAppointment ScheduledAppointment[]
+  classification       String
+  status               ScheduledClassificationStatus @default(value: PATIENT)
+  created_at           DateTime                      @default(now())
+  updated_at           DateTime?                     @updatedAt
+}
+
+model InstitutionalAppointment {
+  id                             Int                              @id @default(autoincrement())
+  institution                    Institution?                     @relation(fields: [institution_id], references: [id])
+  institution_id                 Int?
+  requestedUser                  User?                            @relation(fields: [requested_user_id], references: [id])
+  requested_user_id              Int?
+  scheduled_appointment          ScheduledAppointment?            @relation(fields: [scheduled_appointment_id], references: [id])
+  scheduled_appointment_id       Int?                             @unique
+  reportInstitutionalAppointment ReportInstitutionalAppointment[]
+  room_meet_id                   String?                          @default(uuid()) @db.Uuid
+  created_at                     DateTime                         @default(now())
+  updated_at                     DateTime?                        @updatedAt
+}
+
+model ReportInstitutionalAppointment {
+  id                           Int                      @id @default(autoincrement())
+  institutionalAppointment     InstitutionalAppointment @relation(fields: [institutional_appointment_id], references: [id])
+  institutional_appointment_id Int
+  title                        String
+  body                         String
+  status                       DefaultStatus            @default(value: ACTIVE)
+  created_at                   DateTime                 @default(now())
+  updated_at                   DateTime?                @updatedAt
+}
+
+model Appointment {
+  id                        Int                        @id @default(autoincrement())
+  patient                   User?                      @relation("patientAppointment", fields: [patient_id], references: [id])
+  patient_id                Int?
+  requestedUser             User                       @relation("requestedUserAppointment", fields: [requested_user_id], references: [id])
+  requested_user_id         Int
+  openedBy                  User?                      @relation("openedByAppointment", fields: [opened_by_user_id], references: [id])
+  opened_by_user_id         Int?
+  complaint                 Complaint?
+  classification_by_ai      String?
+  resume                    String?
+  room_meet_id              String?                    @default(uuid()) @db.Uuid
+  slack_thread_id           String?
+  status                    AppointmentStatus          @default(value: WAITING_ATTENDANCE)
+  finished_status           AppointmentFinishedStatus?
+  prescription              Prescription[]
+  exam                      Exam[]
+  queue                     AppointmentQueue?          @default(value: NURSE)
+  sickNote                  SickNote[]
+  medicalRecords            MedicalRecord[]
+  reports                   Report[]
+  institution               Institution?               @relation(fields: [institution_id], references: [id])
+  institution_id            Int?
+  closed_at                 DateTime?
+  AppointmentStatusLog      AppointmentStatusLog[]
+  scheduledAppointment      ScheduledAppointment?      @relation("appointmentScheduled", fields: [scheduled_appointment_id], references: [id])
+  scheduled_appointment_id  Int?                       @unique
+  Attachments               Attachments[]
+  appointmentFeedback       AppointmentFeedback[]
+  AppointmentDiagnose       AppointmentDiagnose[]
+  AppointmentCSAT           AppointmentCSAT[]
+  schedule_mental_health    MentalHealthSchedule?      @relation(fields: [schedule_mental_health_id], references: [id])
+  schedule_mental_health_id Int?                       @unique
+  created_at                DateTime                   @default(now())
+  updated_at                DateTime?                  @updatedAt
+  AppointmentQueueLog       AppointmentQueueLog[]
+  FollowUp                  FollowUp[]
+  AppointmentLog            AppointmentLog[]
+  latest_medical_record     MedicalRecord?             @relation("lastestMedicalRecord", fields: [latest_medical_record_id], references: [id])
+  latest_medical_record_id  Int?
+}
+
+model AppointmentCSAT {
+  id             Int         @id @default(autoincrement())
+  uuid           String      @unique @default(uuid()) @db.Uuid
+  appointment    Appointment @relation(fields: [appointment_id], references: [id])
+  appointment_id Int
+  user           User        @relation(fields: [user_id], references: [id])
+  user_id        Int
+  created_at     DateTime    @default(now())
+}
+
+model AppointmentLog {
+  id             Int         @id @default(autoincrement())
+  appointment    Appointment @relation(fields: [appointment_id], references: [id])
+  appointment_id Int
+  user           User?       @relation(fields: [user_id], references: [id])
+  user_id        Int?
+  data           Json?
+  event_type     String?
+  created_at     DateTime    @default(now())
+}
+
+model AppointmentStatusLog {
+  id             Int                @id @default(autoincrement())
+  appointment    Appointment        @relation(fields: [appointment_id], references: [id])
+  appointment_id Int
+  user           User?              @relation(fields: [user_id], references: [id])
+  user_id        Int?
+  old_status     AppointmentStatus?
+  new_status     AppointmentStatus
+  created_at     DateTime           @default(now())
+  updated_at     DateTime?          @updatedAt
+}
+
+model AppointmentQueueLog {
+  id             Int               @id @default(autoincrement())
+  appointment    Appointment       @relation(fields: [appointment_id], references: [id])
+  appointment_id Int
+  user           User?             @relation(fields: [user_id], references: [id])
+  user_id        Int?
+  old_queue      AppointmentQueue?
+  new_queue      AppointmentQueue
+  created_at     DateTime          @default(now())
+  updated_at     DateTime?         @updatedAt
+}
+
+model Exam {
+  id              Int           @id @default(autoincrement())
+  valid_until     DateTime
+  document        Document?     @relation(fields: [document_id], references: [id])
+  document_id     Int?
+  appointment     Appointment   @relation(fields: [appointment_id], references: [id])
+  appointment_id  Int
+  professional    User          @relation(fields: [professional_id], references: [id])
+  professional_id Int
+  description     String
+  recommendation  String
+  status          DefaultStatus @default(value: ACTIVE)
+  invalidated_at  DateTime?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime?     @updatedAt
+}
+
+model MedicalRecord {
+  id                    Int                         @id @default(autoincrement())
+  document              Document?                   @relation(fields: [document_id], references: [id])
+  document_id           Int?
+  professional          User                        @relation(fields: [professional_id], references: [id])
+  professional_id       Int
+  classification        MedicalRecordClassification
+  exam                  String?
+  systolic              Float?
+  diastolic             Float?
+  heart_rate            Float?
+  respiratory_frequency Float?
+  body_temperature      Float?
+  oxygen_saturation     Float?
+  history               String
+  impression            String
+  conduct               String
+  status                DefaultStatus               @default(value: ACTIVE)
+  invalidated_at        DateTime?
+  created_at            DateTime                    @default(now())
+  updated_at            DateTime?                   @updatedAt
+  appointment_id        Int
+  appointment           Appointment                 @relation(fields: [appointment_id], references: [id])
+  lastest_appointment   Appointment[]               @relation("lastestMedicalRecord")
+}
+
+model Prescription {
+  id                   Int                    @id @default(autoincrement())
+  valid_until          DateTime?
+  document             Document?              @relation(fields: [document_id], references: [id])
+  document_id          Int?
+  professional         User?                  @relation(fields: [professional_id], references: [id])
+  professional_id      Int?
+  type_prescription    PrescriptionType?
+  medicine             Medicine[]
+  status               DefaultStatus          @default(value: ACTIVE)
+  invalidated_at       DateTime?
+  appointment          Appointment?           @relation(fields: [appointment_id], references: [id])
+  appointment_id       Int?
+  created_at           DateTime               @default(now())
+  updated_at           DateTime?              @updatedAt
+}
+
+model Report {
+  id              Int           @id @default(autoincrement())
+  document        Document?     @relation(fields: [document_id], references: [id])
+  document_id     Int?
+  appointment     Appointment   @relation(fields: [appointment_id], references: [id])
+  appointment_id  Int
+  professional    User          @relation(fields: [professional_id], references: [id])
+  professional_id Int
+  title           String
+  body            String
+  status          DefaultStatus @default(value: ACTIVE)
+  invalidated_at  DateTime?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime?     @updatedAt
+}
+
+model SickNote {
+  id              Int               @id @default(autoincrement())
+  valid_until     DateTime
+  document        Document?         @relation(fields: [document_id], references: [id])
+  document_id     Int?
+  appointment     Appointment       @relation(fields: [appointment_id], references: [id])
+  appointment_id  Int
+  professional    User              @relation(fields: [professional_id], references: [id])
+  professional_id Int
+  body            String
+  cid_id          Int?
+  cid             Cid?              @relation(fields: [cid_id], references: [id])
+  status          DefaultStatus     @default(value: ACTIVE)
+  invalidated_at  DateTime?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime?         @updatedAt
+  HistorySickNote HistorySickNote[]
+}
+
+model Certificate {
+  id          Int       @id @default(autoincrement())
+  document_id Int
+  document    Document  @relation(fields: [document_id], references: [id])
+  user_id     Int       @unique
+  user        User      @relation(fields: [user_id], references: [id])
+  created_at  DateTime  @default(now())
+  updated_at  DateTime? @updatedAt
+}
+
+model Document {
+  id                         Int                          @id @default(autoincrement())
+  document_url               String
+  bucket_name                String
+  filename                   String
+  pin                        Int?
+  resource_id                String?
+  should_delete              Boolean?
+  Certificate                Certificate[]
+  Exam                       Exam[]
+  MedicalRecord              MedicalRecord[]
+  Prescription               Prescription[]
+  Report                     Report[]
+  SickNote                   SickNote[]
+  HealthInsurance            HealthInsurance[]
+  Medicine                   Medicine[]
+  UserDisease                UserDisease[]
+  VaccineDocument            VaccineDocument[]
+  HistorySickNote            HistorySickNote[]
+  mentalHealth               MentalHealth[]
+  expense                    Expense[]
+  DocumentAccessKey          DocumentAccessKey[]
+  Attachments                Attachments[]
+  certificateCourse          CertificateCourse[]
+  created_at                 DateTime                     @default(now())
+  updated_at                 DateTime?                    @updatedAt
+  MentalHealthScheduleRecord MentalHealthScheduleRecord[]
+
+  @@index(resource_id)
+}
+
+model DocumentAccessKey {
+  id          Int       @id @default(autoincrement())
+  access_key  String    @default(uuid()) @db.Uuid
+  document_id Int?
+  document    Document? @relation(fields: [document_id], references: [id])
+}
+
+model HealthInsurance {
+  id                 Int                  @id @default(autoincrement())
+  insurance_company  String
+  code               String
+  plan               String
+  valid_until        DateTime
+  status             DefaultStatus
+  document           Document             @relation(fields: [document_id], references: [id])
+  document_id        Int
+  user_id            Int
+  user               User                 @relation(fields: [user_id], references: [id])
+  HospitalPreference HospitalPreference[]
+  created_at         DateTime             @default(now())
+  updated_at         DateTime?            @updatedAt
+}
+
+model HospitalPreference {
+  id                          Int                     @id @default(autoincrement())
+  name                        String
+  health_insurance_id         Int?
+  healthInsurance             HealthInsurance?        @relation(fields: [health_insurance_id], references: [id])
+  institution_id              Int?
+  institution                 Institution?            @relation(fields: [institution_id], references: [id])
+  email                       String?
+  telephone                   String?
+  address                     Address[]
+  hospital_preference_type_id Int?
+  hospitalPreferenceType      HospitalPreferenceType? @relation(fields: [hospital_preference_type_id], references: [id])
+  status                      DefaultStatus           @default(value: ACTIVE)
+  created_at                  DateTime                @default(now())
+  updated_at                  DateTime?               @updatedAt
+}
+
+model HospitalPreferenceType {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  HospitalPreference HospitalPreference[]
+  created_at         DateTime             @default(now())
+  updated_at         DateTime?            @updatedAt
+}
+
+model HealthUnit {
+  id                        Int                            @id @default(autoincrement())
+  company_name              String
+  cnpj                      String
+  name                      String?
+  fullname                  String?
+  address                   Address[]
+  email                     String?
+  telephone                 String
+  whatsapp                  String?
+  health_unit_type          HealthUnitTypes
+  open_at                   String?
+  close_at                  String?
+  patient_type              HealUnitPatientType[]
+  care_modality             HealthUnitCareModality[]
+  notes                     String?
+  appointment_avarage_price String?
+  responsable_finance       String?
+  payment_method            HealthUniPaymentMethods[]
+  bank                      String?
+  bank_branch               String?
+  bank_account              String?
+  pix_key                   String?
+  do_sutures                Boolean?
+  do_medication             Boolean?
+  do_surgery                Boolean?
+  imaging_exams             HealthUnitImagingExams[]
+  laboratory_exams          HealthUnitLaboratoryExams[]
+  care_units                HealthUnitCareUnits[]
+  imobilization_types       HealthUnitImobilizationTypes[]
+  status                    DefaultStatus                  @default(value: ACTIVE)
+  created_at                DateTime                       @default(now())
+  updated_at                DateTime?                      @updatedAt
+  HealthUnitsOnInstitutions HealthUnitsOnInstitutions[]
+}
+
+model HealthUnitsOnInstitutions {
+  healthUnit    HealthUnit  @relation(fields: [healthUnitId], references: [id])
+  institution   Institution @relation(fields: [institutionId], references: [id])
+  healthUnitId  Int
+  institutionId Int
+
+  @@id([healthUnitId, institutionId])
+}
+
+model MeasureBodyMassIndex {
+  id               Int           @id @default(autoincrement())
+  weight           Float?
+  height           Float?
+  user             User          @relation(fields: [user_id], references: [id])
+  user_id          Int
+  status           DefaultStatus @default(value: ACTIVE)
+  measurement_date DateTime?     @default(now())
+  created_at       DateTime      @default(now())
+  updated_at       DateTime?     @updatedAt
+}
+
+model Medicine {
+  id                             Int                       @id @default(autoincrement())
+  name                           String
+  concentration                  Float                     @default(value: 0)
+  medicine_concentration_unit_id Int
+  medicineConcentrationUnit      MedicineConcentrationUnit @relation(fields: [medicine_concentration_unit_id], references: [id])
+  medicine_dosage_unit_id        Int
+  dosageUnit                     MedicineDosageUnit        @relation(fields: [medicine_dosage_unit_id], references: [id])
+  dosage                         Float                     @default(value: 0)
+  scheduled_medicine_id          Int
+  scheduledMedicine              ScheduledMedicine         @relation(fields: [scheduled_medicine_id], references: [id])
+  start_hour                     Int?
+  start_date                     DateTime?
+  valid_until                    DateTime?
+  recommendation                 String?
+  authorization_status           AuthorizationStatus       @default(value: PENDING)
+  status                         DefaultStatus             @default(value: ACTIVE)
+  document                       Document?                 @relation(fields: [document_id], references: [id])
+  document_id                    Int?
+  user_id                        Int
+  user                           User                      @relation(name: "MedicineToUser", fields: [user_id], references: [id])
+  creator_id                     Int?
+  user_creator                   User?                     @relation(name: "MedicineToCreator", fields: [creator_id], references: [id])
+  prescription_id                Int?
+  prescription                   Prescription?             @relation(fields: [prescription_id], references: [id])
+  observation                    String?
+  ScheduledMedicineHours         ScheduledMedicineHours[]
+  MedicineAdministration         MedicineAdministration[]
+  created_at                     DateTime                  @default(now())
+  updated_at                     DateTime?                 @updatedAt
+}
+
+model MedicineAdministration {
+  id                   Int       @id @default(autoincrement())
+  date                 DateTime?
+  medicine_id          Int
+  medicine             Medicine  @relation(fields: [medicine_id], references: [id])
+  medicated_by_user_id Int
+  medicatedByUser      User      @relation(fields: [medicated_by_user_id], references: [id])
+  created_at           DateTime  @default(now())
+  updated_at           DateTime? @updatedAt
+}
+
+model MedicineConcentrationUnit {
+  id         Int        @id @default(autoincrement())
+  name       String
+  Medicine   Medicine[]
+  created_at DateTime   @default(now())
+  updated_at DateTime?  @updatedAt
+}
+
+model MedicineDosageUnit {
+  id         Int        @id @default(autoincrement())
+  name       String
+  Medicine   Medicine[]
+  created_at DateTime   @default(now())
+  updated_at DateTime?  @updatedAt
+}
+
+model ScheduledMedicine {
+  id         Int        @id @default(autoincrement())
+  name       String
+  hour       Int?
+  Medicine   Medicine[]
+  created_at DateTime   @default(now())
+  updated_at DateTime?  @updatedAt
+}
+
+model ScheduledMedicineHours {
+  id          Int       @id @default(autoincrement())
+  medicine_id Int
+  medicine    Medicine  @relation(fields: [medicine_id], references: [id])
+  hour        Int
+  created_at  DateTime  @default(now())
+  updated_at  DateTime? @updatedAt
+}
+
+model UserAllergy {
+  id                 Int                  @id @default(autoincrement())
+  category           AllergyCategory      @relation(fields: [category_id], references: [id])
+  category_id        Int
+  user_id            Int
+  user               User                 @relation(name: "UserAllergyToUser", fields: [user_id], references: [id])
+  creator_id         Int?
+  user_creator       User?                @relation(name: "UserAllergyToCreator", fields: [creator_id], references: [id])
+  orientations       String
+  causer_agent       String
+  status             DefaultStatus        @default(value: ACTIVE)
+  userAllergySymptom UserAllergySymptom[]
+  allergySymptom     AllergySymptom?      @relation(fields: [allergySymptomId], references: [id])
+  allergySymptomId   Int?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime?            @updatedAt
+}
+
+model UserAllergySymptom {
+  id              Int            @id @default(autoincrement())
+  allergy         UserAllergy    @relation(fields: [user_allergy_id], references: [id])
+  user_allergy_id Int
+  symptom         AllergySymptom @relation(fields: [symptom_id], references: [id])
+  symptom_id      Int
+}
+
+model AllergyCategory {
+  id         Int           @id @default(autoincrement())
+  name       String
+  Allergy    UserAllergy[]
+  created_at DateTime      @default(now())
+  updated_at DateTime?     @updatedAt
+}
+
+model AllergySymptom {
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  Allergy            UserAllergy[]
+  UserAllergySymptom UserAllergySymptom[]
+  created_at         DateTime             @default(now())
+  updated_at         DateTime?            @updatedAt
+}
+
+model UserVaccine {
+  id                       Int                        @id @default(autoincrement())
+  vaccine_id               Int
+  vaccine                  Vaccine                    @relation(fields: [vaccine_id], references: [id])
+  observation              String?
+  date                     DateTime?
+  dosage_dose              Float?
+  vaccine_manufacturer     String?
+  batch                    String?
+  status                   DefaultStatus?
+  vaccineDocument          VaccineDocument            @relation(fields: [vaccine_document_id], references: [id])
+  vaccine_document_id      Int
+  user_id                  Int
+  user                     User                       @relation(name: "UserVaccineToUser", fields: [user_id], references: [id])
+  creator_id               Int?
+  user_creator             User?                      @relation(name: "UserVaccineToCreator", fields: [creator_id], references: [id])
+  created_at               DateTime                   @default(now())
+  updated_at               DateTime?                  @updatedAt
+  UserVaccineDosage        UserVaccineDosage[]
+  UserVaccineReinforcement UserVaccineReinforcement[]
+}
+
+model UserVaccineDosage {
+  id            Int         @id @default(autoincrement())
+  userVaccineId Int
+  UserVaccine   UserVaccine @relation(fields: [userVaccineId], references: [id])
+  dosage_date   DateTime
+}
+
+model UserVaccineReinforcement {
+  id                 Int         @id @default(autoincrement())
+  userVaccineId      Int
+  UserVaccine        UserVaccine @relation(fields: [userVaccineId], references: [id])
+  reinforcement_date DateTime
+}
+
+model VaccineDocument {
+  id          Int           @id @default(autoincrement())
+  document    Document      @relation(fields: [document_id], references: [id])
+  document_id Int
+  user_id     Int
+  user        User          @relation(fields: [user_id], references: [id])
+  status      VaccineStatus
+  Vaccine     UserVaccine[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime?     @updatedAt
+}
+
+model Vaccine {
+  id          Int           @id @default(autoincrement())
+  name        String
+  observation String?
+  Vaccine     UserVaccine[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime?     @updatedAt
+}
+
+model UserDisease {
+  id                      Int                  @id @default(autoincrement())
+  cid_id                  Int?
+  cid                     Cid?                 @relation(fields: [cid_id], references: [id])
+  observation             String?
+  treatment_performed     Boolean
+  diagnose_date           DateTime
+  status                  DefaultStatus        @default(value: ACTIVE)
+  document                Document?            @relation(fields: [document_id], references: [id])
+  document_id             Int?
+  user_id                 Int
+  user                    User                 @relation(name: "UserDiseaseToUser", fields: [user_id], references: [id])
+  creator_id              Int?
+  user_creator            User?                @relation(name: "UserDiseaseToCreator", fields: [creator_id], references: [id])
+  appointment_diagnose_id Int?                 @unique
+  AppointmentDiagnose     AppointmentDiagnose? @relation(name: "AppointmentDiagnose", fields: [appointment_diagnose_id], references: [id])
+  other_disease           String?
+  created_at              DateTime             @default(now())
+  updated_at              DateTime?            @updatedAt
+}
+
+model MentalHealth {
+  id              Int           @id @default(autoincrement())
+  follow_up_name  String
+  start_date      DateTime
+  finished_date   DateTime?
+  professional_id Int
+  professional    User          @relation("professionalMentalHealth", fields: [professional_id], references: [id])
+  patient_id      Int
+  patient         User          @relation("patientMentalHealth", fields: [patient_id], references: [id])
+  status          DefaultStatus @default(value: ACTIVE)
+  description     String
+  document_id     Int
+  document        Document      @relation(fields: [document_id], references: [id])
+  created_at      DateTime      @default(now())
+  updated_at      DateTime?     @updatedAt
+}
+
+model UserSurgery {
+  id                Int           @id @default(autoincrement())
+  name              String
+  user_id           Int
+  user              User          @relation(fields: [user_id], references: [id])
+  surgeryRegion     SurgeryRegion @relation(fields: [surgery_region_id], references: [id])
+  surgery_region_id Int
+  observation       String?
+  realization_date  DateTime
+  status            DefaultStatus @default(value: ACTIVE)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime?     @updatedAt
+}
+
+model SurgeryRegion {
+  id         Int           @id @default(autoincrement())
+  name       String
+  surgery    UserSurgery[]
+  created_at DateTime      @default(now())
+  updated_at DateTime?     @updatedAt
+}
+
+model HistorySickNote {
+  id               Int           @id @default(autoincrement())
+  appointment_date DateTime
+  valid_until      DateTime
+  description      String?
+  status           DefaultStatus @default(value: ACTIVE)
+  document_id      Int?
+  document         Document?     @relation(fields: [document_id], references: [id])
+  user_id          Int
+  user             User          @relation(name: "HistorySickNoteToUser", fields: [user_id], references: [id])
+  creator_id       Int?
+  user_creator     User?         @relation(name: "HistorySickNoteToCreator", fields: [creator_id], references: [id])
+  sick_note_id     Int?
+  SickNote         SickNote?     @relation(fields: [sick_note_id], references: [id])
+  created_at       DateTime      @default(now())
+  updated_at       DateTime?     @updatedAt
+}
+
+model GeneralInformation {
+  id                                   Int                      @id @default(autoincrement())
+  blood_type                           BloodType?
+  previous_blood_transfusion           Boolean?
+  adverse_reaction_blood_transfusion   Boolean?
+  authorized_receive_blood_transfusion Boolean?
+  urinary_frequency                    UrinaryFrequency?
+  evacuation_frequency                 EvacuationFrequency?
+  avarage_hours_sleep                  Int?
+  sleep_quality                        SleepQuality?
+  practice_exercises                   Boolean?
+  weekly_frequency_exercise            WeeklyFrequencyExercise?
+  performed_exercises                  String?
+  illicit_drug                         Boolean?
+  smoke                                Boolean?
+  drink_alcohol                        Boolean?
+  User                                 User?                    @relation(fields: [user_id], references: [id])
+  user_id                              Int?                     @unique
+  created_at                           DateTime                 @default(now())
+  updated_at                           DateTime?                @updatedAt
+}
+
+model Refund {
+  id                Int                   @id @default(autoincrement())
+  requested_user_id Int
+  requestedUser     User                  @relation("requestedRefund", fields: [requested_user_id], references: [id])
+  financial_officer Boolean
+  patient_id        Int
+  patient           User                  @relation("patientRefund", fields: [patient_id], references: [id])
+  hospital_name     String
+  hospital_address  String
+  bank              String
+  institution       Institution           @relation(fields: [institution_id], references: [id])
+  institution_id    Int
+  bank_branch       String
+  bank_account      String
+  reason_rejected   RejectedRefundStatus?
+  type              RefundType
+  status            RefundStatus          @default(value: AWAITING_REVIEW)
+  expenses          Expense[]
+  created_at        DateTime              @default(now())
+  updated_at        DateTime?             @updatedAt
+}
+
+model Expense {
+  id          Int         @id @default(autoincrement())
+  type        ExpenseType
+  description String?
+  document    Document    @relation(fields: [document_id], references: [id])
+  document_id Int
+  refund      Refund      @relation(fields: [refund_id], references: [id])
+  refund_id   Int
+  created_at  DateTime    @default(now())
+  updated_at  DateTime?   @updatedAt
+}
+
+model Attachments {
+  id                 Int           @id @default(autoincrement())
+  title              String
+  document           Document      @relation(fields: [document_id], references: [id])
+  document_id        Int
+  appointment        Appointment   @relation(fields: [appointment_id], references: [id])
+  appointment_id     Int
+  user               User          @relation(fields: [created_by_user_id], references: [id])
+  created_by_user_id Int
+  status             DefaultStatus @default(value: ACTIVE)
+  created_at         DateTime      @default(now())
+  updated_at         DateTime?     @updatedAt
+}
+
+model ProfessionalReference {
+  id                Int              @id @default(autoincrement())
+  professional_type ProfessionalType
+  name              String
+  telephone         String
+  email             String?
+  user_id           Int
+  user              User             @relation(fields: [user_id], references: [id])
+  status            DefaultStatus    @default(value: ACTIVE)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime?        @updatedAt
+}
+
+model Permission {
+  id                Int                 @id @default(autoincrement())
+  name              String              @unique
+  description       String?
+  can_add_by_plan   Boolean             @default(value: false)
+  category          PermissionCategory? @relation(fields: [category_id], references: [id])
+  category_id       Int?
+  ProfilePermission ProfilePermission[]
+  PlanPermission    PlanPermission[]
+}
+
+model Profile {
+  id                         Int                          @id @default(autoincrement())
+  name                       String
+  InstitutionalType          InstitutionType?             @relation(fields: [institution_type_id], references: [id])
+  institution_type_id        Int?
+  type                       ProfileType                  @default(value: NORMAL)
+  ProfilePermission          ProfilePermission[]
+  UserProfile                UserProfile[]
+  InstitutionSettingsProfile InstitutionSettingsProfile[]
+  CourseProfile              CourseProfile[]
+  registration_description   String?
+}
+
+model InstitutionType {
+  id          Int           @id @default(autoincrement())
+  name        String
+  is_trial    Boolean       @default(value: false)
+  Institution Institution[]
+  Profile     Profile[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime?     @updatedAt
+}
+
+model ProfilePermission {
+  id            Int        @id @default(autoincrement())
+  profile       Profile    @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  profile_id    Int
+  permission    Permission @relation(fields: [permission_id], references: [id])
+  permission_id Int
+}
+
+model UserProfile {
+  id               Int           @id @default(autoincrement())
+  profile          Profile       @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  profile_id       Int
+  user             User          @relation(fields: [user_id], references: [id])
+  user_id          Int
+  institution      Institution?  @relation(fields: [institution_id], references: [id])
+  institution_id   Int?
+  registration     String?
+  enrollment       String?
+  class            String?
+  status           DefaultStatus @default(value: ACTIVE)
+  is_health_leader Boolean       @default(value: false)
+  is_coverage      Boolean       @default(value: false)
+  created_at       DateTime      @default(now())
+  updated_at       DateTime?     @updatedAt
+  inactivated_at   DateTime?
+
+  educationalStage   EducationalStage? @relation(fields: [educationalStageId], references: [id])
+  educationalStageId Int?
+  schoolGrade        SchoolGrade?      @relation(fields: [schoolGradeId], references: [id])
+  schoolGradeId      Int?
+  companyPosition    CompanyPosition?  @relation(fields: [companyPositionId], references: [id])
+  companyPositionId  Int?
+}
+
+model Plan {
+  id                Int              @id @default(autoincrement())
+  product_name      String
+  currency          String
+  amount            Float
+  original_amount   Float?
+  interval          Interval
+  stripe_plan_id    String
+  product_id        String?
+  subscription      Subscription[]
+  status            DefaultStatus    @default(value: ACTIVE)
+  PlanPermission    PlanPermission[]
+  extra_info        String?
+  interval_count    Int?
+  minimum_months    Int              @default(value: 1)
+  trial_period_days Int?
+  cancel_at         DateTime?
+  Institution       Institution[]
+  type              PlanType         @default(value: B2C)
+  created_at        DateTime         @default(now())
+  updated_at        DateTime?        @updatedAt
+}
+
+model Subscription {
+  id                     Int                  @id @default(autoincrement())
+  user                   User                 @relation(fields: [user_id], references: [id])
+  user_id                Int
+  plan                   Plan                 @relation(fields: [plan_id], references: [id])
+  plan_id                Int
+  stripe_subscription_id String
+  stripe_status          SubscriptionStatus   @default(value: INCOMPLETE)
+  current_period_end     DateTime?
+  cancel_at              DateTime?
+  cancel_at_period_end   Boolean?             @default(value: false)
+  cancelSubscription     CancelSubscription[]
+  institution            Institution?         @relation(fields: [institution_id], references: [id])
+  institution_id         Int?
+  dependent              User?                @relation(fields: [dependent_id], references: [id], name: "dependent")
+  dependent_id           Int?
+  client_secret          String?
+  created_at             DateTime             @default(now())
+  updated_at             DateTime?            @updatedAt
+}
+
+model PlanPermission {
+  id            Int        @id @default(autoincrement())
+  plan          Plan       @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+  plan_id       Int
+  permission    Permission @relation(fields: [permission_id], references: [id])
+  permission_id Int
+}
+
+model PermissionCategory {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  permissions Permission[]
+}
+
+model EmailLog {
+  id         Int      @id @default(autoincrement())
+  email      String
+  data       Json
+  created_at DateTime @default(now())
+}
+
+model WhatsAppLog {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  phone      String
+  data       Json
+  created_at DateTime @default(now())
+}
+
+model SmsLog {
+  id         Int      @id @default(autoincrement())
+  telephone  String
+  data       Json
+  created_at DateTime @default(now())
+}
+
+model CancelSubscription {
+  id              Int                      @id @default(autoincrement())
+  subscription    Subscription             @relation(fields: [subscription_id], references: [id])
+  subscription_id Int                      @unique
+  cancel_at       DateTime
+  status          CancelSubscriptionStatus @default(value: PENDING)
+  created_at      DateTime                 @default(now())
+  updated_at      DateTime?                @updatedAt
+}
+
+model Cid {
+  id                   Int                   @id @default(autoincrement())
+  chapter              String
+  chapter_description  String
+  group                String
+  category             String
+  category_description String
+  code                 String
+  code_description     String
+  popular_name         String?
+  AppointmentDiagnose  AppointmentDiagnose[]
+  sickNote             SickNote[]
+  UserDisease          UserDisease[]
+}
+
+model AppointmentDiagnose {
+  id               Int                @id @default(autoincrement())
+  appointment      Appointment        @relation(fields: [appointment_id], references: [id])
+  appointment_id   Int
+  cid              Cid                @relation(fields: [cid_id], references: [id])
+  cid_id           Int
+  user             User               @relation("patientAppointmentDiagnose", fields: [user_id], references: [id])
+  user_id          Int
+  professional     User?              @relation("professionalAppointmentDiagnose", fields: [professional_id], references: [id])
+  professional_id  Int?
+  date             DateTime?
+  diagnoseExternal Boolean?
+  observation      String?
+  type             CidAppointmentType
+  status           DefaultStatus      @default(value: ACTIVE)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime?          @updatedAt
+  UserDisease      UserDisease?       @relation(name: "AppointmentDiagnose")
+}
+
+model InstitutionalSettings {
+  id                              Int                            @id @default(autoincrement())
+  name                            String
+  description                     String?
+  has_profile                     Boolean                        @default(value: false)
+  is_private                      Boolean                        @default(value: false)
+  input_type                      InputType?
+  is_product                      Boolean                        @default(value: false)
+  institutitonSettings            InstitutionSettings[]
+  InstitutionSettingsLog          InstitutionSettingsLog[]
+  InstitutionalSettingsCategory   InstitutionalSettingsCategory? @relation(fields: [institutionalSettingsCategoryId], references: [id])
+  institutionalSettingsCategoryId Int?
+}
+
+model InstitutionalSettingsCategory {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  institutionalSettings InstitutionalSettings[]
+}
+
+model InstitutionSettings {
+  id                         Int                          @id @default(autoincrement())
+  institutionalSettings      InstitutionalSettings        @relation(fields: [institutional_setting_id], references: [id])
+  institutional_setting_id   Int
+  institution                Institution                  @relation(fields: [institution_id], references: [id])
+  institution_id             Int
+  value                      Json?
+  InstitutionSettingsProfile InstitutionSettingsProfile[]
+}
+
+model InstitutionSettingsLog {
+  id                       Int                   @id @default(autoincrement())
+  institutionalSettings    InstitutionalSettings @relation(fields: [institutional_setting_id], references: [id])
+  institutional_setting_id Int
+  institution              Institution           @relation(fields: [institution_id], references: [id])
+  institution_id           Int
+  user                     User                  @relation(fields: [user_id], references: [id])
+  user_id                  Int
+  value                    Json?
+  status                   EditLogType
+  created_at               DateTime              @default(now())
+}
+
+model InstitutionSettingsProfile {
+  id                     Int                 @id @default(autoincrement())
+  institutionSettings    InstitutionSettings @relation(fields: [institution_setting_id], references: [id], onDelete: Cascade)
+  institution_setting_id Int
+  profile                Profile             @relation(fields: [profile_id], references: [id])
+  profile_id             Int
+}
+
+model Image {
+  id          Int          @id @default(autoincrement())
+  url         String
+  bucket_name String
+  filename    String
+  user        User?        @relation(fields: [user_id], references: [id])
+  user_id     Int?         @unique
+  course      Course?
+  network     Network?
+  brand       Brand?
+  institution Institution?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime?    @updatedAt
+}
+
+model Course {
+  id                   Int                 @id @default(autoincrement())
+  title                String
+  image                Image?              @relation(fields: [image_id], references: [id])
+  image_id             Int?                @unique
+  descriptions         CourseDescription[]
+  is_published         Boolean
+  approval             Int?
+  chance               Int?
+  maximum_time         Int?
+  qtd_questions        Int?
+  user                 User                @relation(fields: [user_id], references: [id])
+  user_id              Int
+  benefits             String?
+  certificate_validity Int?
+  module               Module[]
+  question             Question[]
+  test                 CourseTest[]
+  courseUser           CourseUser[]
+  certificate          CertificateCourse[]
+  profiles             CourseProfile[]
+  status               DefaultStatus       @default(value: ACTIVE)
+  created_at           DateTime            @default(now())
+  updated_at           DateTime?           @updatedAt
+}
+
+model CourseProfile {
+  id         Int     @id @default(autoincrement())
+  course     Course  @relation(fields: [course_id], references: [id])
+  course_id  Int
+  profile    Profile @relation(fields: [profile_id], references: [id])
+  profile_id Int
+}
+
+model CourseTest {
+  id          Int          @id @default(autoincrement())
+  course      Course       @relation(fields: [course_id], references: [id])
+  course_id   Int
+  user        User         @relation(fields: [user_id], references: [id])
+  user_id     Int
+  grade       Int?
+  finished_at DateTime?
+  choiceUser  ChoiceUser[]
+  created_at  DateTime     @default(now())
+  updated_at  DateTime?    @updatedAt
+}
+
+model CourseDescription {
+  id          Int    @id @default(autoincrement())
+  title       String
+  description String
+  course      Course @relation(fields: [course_id], references: [id])
+  course_id   Int
+}
+
+model Module {
+  id            Int              @id @default(autoincrement())
+  name          String
+  description   String
+  course        Course           @relation(fields: [course_id], references: [id])
+  course_id     Int
+  class         Class[]
+  status        DefaultStatus    @default(value: ACTIVE)
+  qtd_questions Int?
+  quiz          ModuleUserQuiz[]
+  created_at    DateTime         @default(now())
+  updated_at    DateTime?        @updatedAt
+}
+
+model ModuleUserQuiz {
+  id         Int          @id @default(autoincrement())
+  module     Module       @relation(fields: [module_id], references: [id])
+  module_id  Int
+  user       User         @relation(fields: [user_id], references: [id])
+  user_id    Int
+  choiceUser ChoiceUser[]
+  created_at DateTime     @default(now())
+  updated_at DateTime?    @updatedAt
+}
+
+model Class {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  video       String
+  duration    Int
+  material    String
+  module      Module        @relation(fields: [module_id], references: [id])
+  module_id   Int
+  question    Question[]
+  classUser   ClassUser[]
+  status      DefaultStatus @default(value: ACTIVE)
+  created_at  DateTime      @default(now())
+  updated_at  DateTime?     @updatedAt
+}
+
+model Question {
+  id         Int           @id @default(autoincrement())
+  command    String
+  text       String
+  class      Class?        @relation(fields: [class_id], references: [id])
+  class_id   Int?
+  course     Course?       @relation(fields: [course_id], references: [id])
+  course_id  Int?
+  choice     Choice[]
+  status     DefaultStatus @default(value: ACTIVE)
+  created_at DateTime      @default(now())
+  updated_at DateTime?     @updatedAt
+}
+
+model Choice {
+  id          Int          @id @default(autoincrement())
+  text        String
+  question    Question     @relation(fields: [question_id], references: [id])
+  question_id Int
+  answer      Answer[]
+  choiceUser  ChoiceUser[]
+  created_at  DateTime     @default(now())
+  updated_at  DateTime?    @updatedAt
+}
+
+model Answer {
+  id         Int       @id @default(autoincrement())
+  text       String
+  choice     Choice    @relation(fields: [choice_id], references: [id])
+  choice_id  Int
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+}
+
+model CourseUser {
+  id         Int       @id @default(autoincrement())
+  course     Course    @relation(fields: [course_id], references: [id])
+  course_id  Int
+  user       User      @relation(fields: [user_id], references: [id])
+  user_id    Int
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+}
+
+model ClassUser {
+  id         Int       @id @default(autoincrement())
+  class      Class     @relation(fields: [class_id], references: [id])
+  class_id   Int
+  user       User      @relation(fields: [user_id], references: [id])
+  user_id    Int
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+}
+
+model ChoiceUser {
+  id         Int             @id @default(autoincrement())
+  choice     Choice          @relation(fields: [choice_id], references: [id])
+  choice_id  Int
+  test       CourseTest?     @relation(fields: [test_id], references: [id])
+  test_id    Int?
+  quiz       ModuleUserQuiz? @relation(fields: [quiz_id], references: [id])
+  quiz_id    Int?
+  created_at DateTime        @default(now())
+  updated_at DateTime?       @updatedAt
+}
+
+model CertificateCourse {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [user_id], references: [id])
+  user_id     Int
+  course      Course    @relation(fields: [course_id], references: [id])
+  course_id   Int
+  document    Document  @relation(fields: [document_id], references: [id])
+  document_id Int
+  created_at  DateTime  @default(now())
+  updated_at  DateTime? @updatedAt
+}
+
+model CalendarSettings {
+  id         Int                  @id @default(autoincrement())
+  day        CalendarSettingsDays
+  start_time String
+  end_time   String
+  user_id    Int
+  user       User                 @relation(fields: [user_id], references: [id])
+  created_at DateTime             @default(now())
+  updated_at DateTime?            @updatedAt
+}
+
+model MentalHealthScheduleUser {
+  id                        Int                  @id @default(autoincrement())
+  mental_health_schedule    MentalHealthSchedule @relation(fields: [mental_health_schedule_id], references: [id])
+  mental_health_schedule_id Int
+  user                      User                 @relation(fields: [user_id], references: [id])
+  user_id                   Int
+}
+
+model MentalHealthScheduleRecordUser {
+  id                               Int                                @id @default(autoincrement())
+  mental_health_schedule_record    MentalHealthScheduleRecord         @relation(fields: [mental_health_schedule_record_id], references: [id])
+  mental_health_schedule_record_id Int
+  user                             User                               @relation(fields: [user_id], references: [id])
+  user_id                          Int
+  user_type                        MentalHealthScheduleRecordUserType
+}
+
+model MentalHealthScheduleRecord {
+  id                        Int                              @id @default(autoincrement())
+  mental_health_schedule    MentalHealthSchedule             @relation(fields: [mental_health_schedule_id], references: [id])
+  mental_health_schedule_id Int
+  status                    MentalHealthScheduleRecordStatus
+  description               String?
+  document                  Document?                        @relation(fields: [document_id], references: [id])
+  document_id               Int?
+  users                     MentalHealthScheduleRecordUser[]
+  created_at                DateTime                         @default(now())
+  updated_at                DateTime?                        @updatedAt
+}
+
+model MentalHealthSchedule {
+  id                            Int                             @id @default(autoincrement())
+  status                        MentalHealthScheduleStatus      @default(value: Agendada)
+  to_student                    Boolean                         @default(value: false)
+  start                         DateTime
+  end                           DateTime
+  professional_id               Int?
+  professional                  User?                           @relation(name: "professionalMentalHealthSchedule", fields: [professional_id], references: [id])
+  collaborator_id               Int?
+  collaborator                  User?                           @relation(fields: [collaborator_id], references: [id])
+  responsible                   MentalHealthScheduleUser[]
+  appointment                   Appointment?
+  mental_health_schedule_record MentalHealthScheduleRecord[]
+  created_at                    DateTime                        @default(now())
+  updated_at                    DateTime?                       @updatedAt
+  MentalHealthScheduleStatusLog MentalHealthScheduleStatusLog[]
+  closed_at                     DateTime?
+}
+
+model MentalHealthScheduleStatusLog {
+  id          Int                         @id @default(autoincrement())
+  schedule    MentalHealthSchedule        @relation(fields: [schedule_id], references: [id])
+  schedule_id Int
+  user        User?                       @relation(fields: [user_id], references: [id])
+  user_id     Int?
+  old_status  MentalHealthScheduleStatus?
+  new_status  MentalHealthScheduleStatus
+  created_at  DateTime                    @default(now())
+  updated_at  DateTime?                   @updatedAt
+}
+
+model UserCreationLog {
+  id              Int       @id @default(autoincrement())
+  user_id         Int?
+  user            User?     @relation(name: "creationLogToUser", fields: [user_id], references: [id])
+  user_creator_id Int?
+  user_creator    User?     @relation(name: "creationLogToCreator", fields: [user_creator_id], references: [id])
+  created_at      DateTime  @default(now())
+  updated_at      DateTime? @updatedAt
+}
+
+model BankAccount {
+  id          Int          @id @default(autoincrement())
+  agency      String?
+  account     String?
+  pix_key     String?
+  bank        String?
+  network     Network?
+  brand       Brand?
+  institution Institution?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime?    @updatedAt
+}
+
+model EducationalStage {
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  abbreviation String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime? @updatedAt
+
+  UserProfile UserProfile[]
+  SchoolGrade EducationalStageToSchoolGrade[]
+}
+
+model SchoolGrade {
+  id         Int       @id @default(autoincrement())
+  name       String
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  UserProfile      UserProfile[]
+  EducationalStage EducationalStageToSchoolGrade[]
+}
+
+model EducationalStageToSchoolGrade {
+  created_at         DateTime         @default(now())
+  updated_at         DateTime?        @updatedAt
+  EducationalStage   EducationalStage @relation(fields: [educationalStageId], references: [id])
+  educationalStageId Int
+  SchoolGrade        SchoolGrade      @relation(fields: [schoolGradeId], references: [id])
+  schoolGradeId      Int
+
+  @@id([educationalStageId, schoolGradeId])
+}
+
+model CompanyPosition {
+  id         Int       @id @default(autoincrement())
+  name       String
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+
+  UserProfile UserProfile[]
+}
