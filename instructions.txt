@@ -1,60 +1,46 @@
-1. user_input
-"i want to know the time average between all appointments from 2024 creation and its medical record cretion for the ones who have any medical record. i want just for active medical records and only compare for the first one created"
+# Example of expected results
 
-1. correct result
-WITH "FirstMedicalRecord" AS (
-    SELECT 
-        "appointment_id", 
-        MIN("created_at") AS "first_medical_record_created_at"
-    FROM 
-        "MedicalRecord"
-    WHERE 
-        "status" = 'ACTIVE'
-    GROUP BY 
-        "appointment_id"
-)
-SELECT 
-    AVG(EXTRACT(EPOCH FROM (fm."first_medical_record_created_at" - a."created_at")) / 3600) AS "average_time_difference_hours"
-FROM 
-    "Appointment" a
-INNER JOIN 
-    "FirstMedicalRecord" fm ON a."id" = fm."appointment_id"
-WHERE 
-    a."created_at" BETWEEN '2024-01-01' AND '2024-12-31';
+input: count all users 
+output: SELECT COUNT(*) FROM "User" WHERE "status" <> 'INACTIVE';
 
+input: "i want to know the time average between all appointments from 2024 creation and its medical record cretion for the ones who have any medical record. i want just for active medical records and only compare for the first one created"
+output: WITH "FirstMedicalRecord" AS (SELECT "appointment_id", MIN("created_at") AS "first_medical_record_created_at" FROM "MedicalRecord" WHERE "status" = 'ACTIVE' GROUP BY "appointment_id") SELECT AVG(EXTRACT(EPOCH FROM (fm."first_medical_record_created_at" - a."created_at")) / 3600) AS "average_time_difference_hours" FROM  "Appointment" a INNER JOIN "FirstMedicalRecord" fm ON a."id" = fm."appointment_id" WHERE a."created_at" BETWEEN '2024-01-01' AND '2024-12-31';
 
-1. user_input
-"Retrieve the count of appointments for institutions with names similar to 'intituicao coala' in the last month."
+input: "quantos usuarios se ativaram nos ultimos 7 dias?"
+output: SELECT COUNT(*) FROM "User" WHERE "activated_at" >= CURRENT_DATE - INTERVAL '7 days' AND "activated_at" < CURRENT_DATE;
 
-1. correct result 
-SELECT 
-    i.id,
-    i.fantasy_name,
-    COUNT(a.id) AS appointment_count
-FROM "Institution" i
-LEFT JOIN "Appointment" a ON i.id = a.institution_id
-    AND a.created_at >= NOW() - INTERVAL '1 month'
-WHERE
-    LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%intituicao coala%'))
-    OR LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%intituicao coala%'))
-    OR similarity(LOWER(unaccent(fantasy_name)), LOWER(unaccent('intituicao coala'))) > 0.4
-    OR similarity(LOWER(unaccent(nickname)), LOWER(unaccent('intituicao coala'))) > 0.4
-GROUP BY i.id, i.fantasy_name
-ORDER BY
-    GREATEST(
-        similarity(LOWER(unaccent(fantasy_name)), LOWER(unaccent('intituicao coala'))),
-        similarity(LOWER(unaccent(nickname)), LOWER(unaccent('intituicao coala'))),
-        CASE WHEN LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%intituicao coala%')) THEN 1 ELSE 0 END,
-        CASE WHEN LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%intituicao coala%')) THEN 1 ELSE 0 END
-    ) DESC;
+input: "Retrieve the count of appointments for institutions with names similar to 'kwaki' in the last month."
+output: SELECT i.id, i.fantasy_name, COUNT(a.id) AS appointment_count FROM "Institution" i LEFT JOIN "Appointment" a ON i.id = a.institution_id AND a.created_at >= NOW() - INTERVAL '1 month'WHERE LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%kwaki%')) OR LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%kwaki%')) GROUP BY i.id, i.fantasy_name ORDER BY GREATEST( CASE WHEN LOWER(unaccent(fantasy_name)) ILIKE LOWER(unaccent('%kwaki%')) THEN 1 ELSE 0 END, CASE WHEN LOWER(unaccent(nickname)) ILIKE LOWER(unaccent('%kwaki%')) THEN 1 ELSE 0 END) DESC;
 
-1. user_input
-get all users activated last month that is a manager/gestor
+input: "get all users activated last month that is a manager"
+output: SELECT u.id, u.name, u.lastname FROM "User" u JOIN "UserProfile" ON u."id" = "UserProfile"."user_id" JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id" WHERE u."activated_at" BETWEEN date_trunc('month', current_date) - INTERVAL '1 month' AND date_trunc('month', current_date) AND "Profile"."name" = 'Gestor';
 
-1. correct result 
-SELECT "User".*
-FROM "User"
-JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"
-JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"
-WHERE "User"."activated_at" BETWEEN date_trunc('month', current_date) - INTERVAL '1 month' AND date_trunc('month', current_date)
-AND "Profile"."name" = 'Gestor';
+input: "count all students on system"
+output: SELECT COUNT(*) FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"  JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"  where "Profile"."name" = 'Aluno';
+
+input: "count all managers on system"
+output: SELECT COUNT(*) FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"  JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"  where "Profile"."name" = 'Gestor';
+
+input: "count all health team users on system"
+output: SELECT COUNT(*) FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"  JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"  where "Profile"."type" = 'MEDICAL';
+
+input: "count all admin users on system"
+output: SELECT COUNT(*) FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"  JOIN "Profile" ON "UserProfile"."institution_id" = NULL;
+
+input: "count all collaborator users on system"
+output: SELECT COUNT(*) FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id"  JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id"  where "Profile"."name" = 'Colaborador';
+
+input: "How many schools had at least one appointment this month?"
+output: SELECT COUNT(DISTINCT i.id)  FROM "Institution" i  JOIN "Appointment" a ON i.id = a.institution_id WHERE EXTRACT(MONTH FROM a.created_at) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM a.created_at) = EXTRACT(YEAR FROM CURRENT_DATE);
+
+input: "How many schools had at least one appointment this month, bring the names of the schools and the number of appointments."
+output: SELECT COUNT(DISTINCT a.institution_id) AS "Number of Schools", i.fantasy_name AS "School Name", COUNT(a.id) AS "Number of Appointments" FROM "Institution" i JOIN "Appointment" a ON i.id = a.institution_id WHERE EXTRACT(MONTH FROM a.created_at) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM a.created_at) = EXTRACT(YEAR FROM CURRENT_DATE) GROUP BY i.fantasy_name;
+
+input: "How many schools had at least one appointment this month, bring the names of the schools and the number of appointments."
+output: SELECT "User"."email", "User"."telephone", "Institution".fantasy_name, "Institution".id as institution_id FROM "User" JOIN "UserProfile" ON "User"."id" = "UserProfile"."user_id" JOIN "Profile" ON "UserProfile"."profile_id" = "Profile"."id" JOIN "Institution" ON "UserProfile"."institution_id" = "Institution"."id" WHERE "Profile"."name" = 'Gestor' AND LOWER(unaccent("Institution"."fantasy_name")) ILIKE LOWER(unaccent('%Bom Tempo%'));
+
+input: "Does user with id 3165 have any email activation token?"
+output: SELECT * FROM "EmailLog" JOIN "User" ON "User"."id" = 3165 WHERE "EmailLog"."email" = "User".email ORDER BY "EmailLog".created_at DESC LIMIT 10
+
+input: "count of all appointments opened last month that are still not inactive"
+output: SELECT COUNT(*) FROM "Appointment" WHERE finished_status <> 'INVALID' AND "created_at" BETWEEN date_trunc('month', current_date - interval '1' month) AND date_trunc('month', current_date);

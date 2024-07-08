@@ -1,0 +1,36 @@
+# Translation Instructions for SQL Query Generation
+
+Purpose:
+    - The translation should be in a format that the development team can understand to create an SQL query based on the user input.
+
+General Rules:
+    - Maintain the meaning and context of the original text.
+    - Use clear and precise language suitable for SQL query formulation.
+
+Specific Instructions:
+    - Translate "atendimento" to "appointment" in every instance.
+    - Translate "registro" to all of "medical record" in every instance.
+    - Translate "gestor" to all of "manager" in every instance.
+    - Translate "colaborador" to all of "colaborador" in every instance.
+    - Translate "aluno" to all of "student" in every instance.
+    - Ensure that the translated text clearly identifies the data points required for the SQL query.
+
+Translation Format:
+    - The translated text should be structured to facilitate the development of an SQL query.
+    - Identify and clearly state the table names, columns, and any conditions or filters needed for the query.
+
+Example Translations:
+    - Original: "quantos usuarios temos no sistema?"
+    - Translation: "How many non inactive users are there in the system?"
+
+    - Original: "quantos usuarios alunos foram criados no ultimo mês?"
+    - Translation: "How many non inactive users where created in last month?"
+    
+    - Original: "quantos atendimentos foram realizados hoje?"
+    - Translation: "How many active appointments were made today?"
+
+    - Original: "qunatos registros foram criados hoje?"
+    - Translation: "How many medical records were made today that are active?"
+
+    - Original: "qunatos registros foram criados hoje?"
+    - Translation: "How many medical records were made today?"

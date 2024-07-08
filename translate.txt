@@ -1,0 +1,7 @@
+Specific Instructions:
+    - Translate "atendimento" to "appointment".
+    - Translate "registro" to "medical record".
+    - Translate "gestor" to "manager".
+    - Translate "colaborador" to "collaborator".
+    - Translate "aluno" to "student".
+    - Translate "escola" to "institution".
